@@ -1,37 +1,39 @@
 package main
 
 import (
-	"bytes"
+	"flag"
 	"os"
-	"strings"
 	"testing"
 )
 
-func TestMain_NoArgs(t *testing.T) {
-	originalStderr := os.Stderr
-	defer func() { os.Stderr = originalStderr }()
-
-	r, w, err := os.Pipe()
-	if err != nil {
-		t.Fatal(err)
+func Test_run_flagVar(t *testing.T) {
+	tests := []struct {
+		name string
+		args []string
+		want int
+	}{
+		{
+			name: "No args",
+			args: []string{},
+			want: ExitCodeError,
+		},
+		{
+			name: "record_count 50",
+			args: []string{"-record_count", "50", "input.csv"},
+			want: ExitCodeOK,
+		},
+		{
+			name: "multiple args",
+			args: []string{"input1.csv", "input2.csv"},
+			want: ExitCodeError,
+		},
 	}
-
-	os.Stderr = w
-	os.Args = []string{"csv-split"}
-
-	main()
-
-	w.Close()
-
-	var buf bytes.Buffer
-	if _, err := buf.ReadFrom(r); err != nil {
-		t.Fatal(err)
-	}
-
-	// 標準エラー出力の内容をトリム
-	stderr := strings.TrimSpace(buf.String())
-	expected := "Usage: csv-split <input-file> <lines-per-file>"
-	if stderr != expected {
-		t.Errorf("Unexpected error message: %q, expected: %q", stderr, expected)
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			commandLine = flag.NewFlagSet(os.Args[0], flag.ExitOnError)
+			if got := run(tt.args); got != tt.want {
+				t.Errorf("run() = %v, want %v", got, tt.want)
+			}
+		})
 	}
 }
