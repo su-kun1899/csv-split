@@ -6,6 +6,8 @@ import (
 	"os"
 )
 
+const appName = "csv-split"
+
 const (
 	ExitCodeOK = iota
 	ExitCodeError
@@ -21,8 +23,8 @@ func run(args []string) int {
 		return ExitCodeError
 	}
 
+	fmt.Fprintln(os.Stderr, fmt.Sprintf("Only one file can be processed at a time. Usage: %s <file>", appName))
 	if commandLine.NArg() != 1 {
-		fmt.Fprintln(os.Stderr, "Only one file can be processed at a time. Usage: csv-split <file>")
 		return ExitCodeError
 	}
 	fileName := commandLine.Arg(0)
