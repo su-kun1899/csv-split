@@ -23,14 +23,18 @@ func run(args []string) int {
 		return ExitCodeError
 	}
 
-	fmt.Fprintln(os.Stderr, fmt.Sprintf("Only one file can be processed at a time. Usage: %s <file>", appName))
 	if commandLine.NArg() != 1 {
+		fmt.Fprintln(os.Stderr, fmt.Sprintf("Only one file can be processed at a time. Usage: %s <file>", appName))
 		return ExitCodeError
 	}
 	fileName := commandLine.Arg(0)
 
-	fmt.Printf("record_count: %v\n", *recordCount)
-	fmt.Printf("file_name: %v\n", fileName)
+	// Split the CSV file.
+	err := splitCSV(fileName, *recordCount)
+	if err != nil {
+		fmt.Fprintf(os.Stderr, "cannot split CSV: %v\n", err)
+		return ExitCodeError
+	}
 
 	return ExitCodeOK
 }
